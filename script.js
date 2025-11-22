@@ -1,6 +1,6 @@
 // --- 1. Data Model ---
 const participants = [
-    { name: "Participant A", imagePath: "images/face_01.png" },
+    { name: "Participant A", imagePath: "images/Hutcho.jpeg" },
     { name: "Participant B", imagePath: "images/face_02.png" },
     { name: "Participant C", imagePath: "images/face_03.png" },
     { name: "Participant D", imagePath: "images/face_04.png" },
