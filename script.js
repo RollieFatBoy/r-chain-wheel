@@ -1,8 +1,8 @@
 // --- 1. Data Model & Setup ---
 const participants = [
     // IMPORTANT: Ensure these image paths are correct relative to index.html
-    { name: "Participant A", imagePath: "images/Hutcho.jpeg" },
-    { name: "Participant B", imagePath: "images/Griffo.png" },
+    { name: "Participant A", imagePath: "images/face_01.png" },
+    { name: "Participant B", imagePath: "images/face_02.png" },
     { name: "Participant C", imagePath: "images/face_03.png" },
     { name: "Participant D", imagePath: "images/face_04.png" },
     { name: "Participant E", imagePath: "images/face_05.png" },
@@ -35,6 +35,7 @@ const center = 200;
  * Angle is measured clockwise from the positive X-axis (right side).
  */
 function polarToCartesian(angleInDegrees, radius) {
+    // We adjust by -90 because standard SVG 0 degrees is right/East, but our math starts top/North
     const angleInRadians = (angleInDegrees - 90) * Math.PI / 180.0;
     return {
         x: center + (radius * Math.cos(angleInRadians)),
@@ -51,7 +52,6 @@ function describeArc(startAngle, endAngle) {
 
     const largeArcFlag = endAngle - startAngle <= 180 ? "0" : "1";
 
-    // SVG Path Commands:
     const d = [
         "M", center, center, // M: Move to the center 
         "L", start.x, start.y, // L: Line to the starting point on the circle
@@ -75,7 +75,6 @@ function createSegments() {
         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
         path.setAttribute("d", describeArc(startAngle, endAngle));
         path.classList.add("svg-segment");
-        // Alternate colors
         path.setAttribute("fill", index % 2 === 0 ? RED_VELVET_LIGHT : RED_VELVET_DARK); 
         segmentGroup.appendChild(path);
 
@@ -108,7 +107,22 @@ function createSegments() {
         image.setAttribute("x", imagePosition.x - (imageSize / 2));
         image.setAttribute("y", imagePosition.y - (imageSize / 2));
         
-        // Apply the clip path to make the image circular
+        // *****************************************************************
+        // *** THE FIX: Rotate the image to align the bottom with the center ***
+        // *****************************************************************
+        
+        // 1. Calculate the angle of the image's center point relative to the wheel's center.
+        // The angle needs to compensate for the midAngle of the segment and the initial SVG rotation (-90).
+        // midAngle is clockwise from the right side.
+        const rotationAngle = midAngle + 90; 
+        
+        // 2. Apply the rotation transform around the image's own center point
+        image.setAttribute(
+            "transform", 
+            `rotate(${rotationAngle}, ${imagePosition.x}, ${imagePosition.y})`
+        );
+        
+        // 3. Apply the clip path
         image.setAttribute("clip-path", `url(#${clipId})`);
         
         // Add clip path and image to the SVG
@@ -119,42 +133,34 @@ function createSegments() {
     });
 }
 
-// --- 3. Spinning Logic ---
+// --- 3. Spinning Logic (Unchanged) ---
 function spinWheel() {
     spinButton.disabled = true;
     resultDisplay.textContent = "Spinning...";
 
-    // 1. Determine the Winning Index
     const winningIndex = Math.floor(Math.random() * segmentCount);
     const winningPerson = participants[winningIndex];
-
-    // 2. Calculate the required rotation angle
-
-    // The wheel is initially rotated -90 degrees in CSS to align segment 0 with the pointer position (top).
-    // The pointer is fixed at the top (0 degrees visually).
     
     // Angle needed to align the *center* of the winning segment with 0 degrees (the right side in SVG space)
     const targetSegmentCenterAngle = winningIndex * degreesPerSegment + (degreesPerSegment / 2);
 
-    // This calculates the required rotation to land the winning segment's center at the visual pointer (0 degrees/top).
-    // The -90 accounts for the initial SVG rotation.
-    const requiredAngleToTarget = -90 - targetSegmentCenterAngle;
+    // Calculate rotation to bring the winning segment's center to the visual pointer (top).
+    const pointerAngle = 90; // The pointer is fixed at the top (visually 90 degrees in SVG space)
+    const requiredAngleToTarget = (pointerAngle - targetSegmentCenterAngle);
 
-    // 3. Add random full revolutions (4 to 6 full spins for visual effect)
+    // Add random full revolutions (4 to 6 full spins)
     const randomRevolutions = (Math.floor(Math.random() * 3) + 4) * 360; 
 
-    // 4. Final Target Rotation
-    // The rotation is applied *on top of* the current rotation, plus the full spins.
+    // Final Target Rotation
     const finalTargetRotation = currentRotation + randomRevolutions + requiredAngleToTarget;
 
-    // 5. Apply the rotation (to the wheel-container div)
+    // Apply the rotation (to the wheel-container div)
     wheelContainer.style.transform = `rotate(${finalTargetRotation}deg)`;
 
-    // Update the total rotation for the next spin (we use the absolute final angle)
+    // Update the total rotation for the next spin
     currentRotation = finalTargetRotation;
 
-    // 6. Display Result After Animation
-    // The transition duration is 4s, so we delay the result display by 4s.
+    // Display Result After Animation
     setTimeout(() => {
         spinButton.disabled = false;
         resultDisplay.textContent = `Winner: ${winningPerson.name}!`;
@@ -163,9 +169,6 @@ function spinWheel() {
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
-    // 1. Build the segments using SVG
     createSegments(); 
-    
-    // 2. Attach event listener to the button
     spinButton.addEventListener('click', spinWheel);
 });
