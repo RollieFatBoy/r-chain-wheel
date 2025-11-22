@@ -1,13 +1,13 @@
 // --- 1. Data Model & Setup ---
 const participants = [
     // IMPORTANT: Ensure these image paths are correct relative to index.html
-    { name: "Participant Davo", imagePath: "images/Davo.png" },
-    { name: "Participant Flash", imagePath: "images/Flash.png" },
-    { name: "Participant Griffo", imagePath: "images/Griffo.png" },
-    { name: "Participant Haysto", imagePath: "images/Haysto.png" },
-    { name: "Participant Hutcho", imagePath: "images/Hutcho.jpeg" },
-    { name: "Participant Risk", imagePath: "images/Risk.png" },
-    { name: "Participant Whitey", imagePath: "images/Whitey.png" }
+    { name: "Next participant", imagePath: "images/Davo.png" },
+    { name: "Get to work", imagePath: "images/Flash.png" },
+    { name: "Your Target", imagePath: "images/Griffo.png" },
+    { name: "Decided", imagePath: "images/Haysto.png" },
+    { name: "Lucky him", imagePath: "images/Hutcho.jpeg" },
+    { name: "...and so it follows", imagePath: "images/Risk.png" },
+    { name: "Winner Winner", imagePath: "images/Whitey.png" }
 ];
 
 const segmentCount = participants.length;
