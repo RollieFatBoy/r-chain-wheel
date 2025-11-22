@@ -133,39 +133,48 @@ function createSegments() {
     });
 }
 
-// --- 3. Spinning Logic (Unchanged) ---
+// --- 3. Spinning Logic (CORRECTED) ---
 function spinWheel() {
     spinButton.disabled = true;
     resultDisplay.textContent = "Spinning...";
 
+    // 1. Determine the Winning Index
     const winningIndex = Math.floor(Math.random() * segmentCount);
     const winningPerson = participants[winningIndex];
-    
-    // Angle needed to align the *center* of the winning segment with 0 degrees (the right side in SVG space)
+
+    // 2. Calculate the required rotation angle
+
+    // Angle of the center of the winning segment relative to the SVG's current 0-degree mark (top).
+    // Note: The segments are drawn starting from the top and going clockwise.
     const targetSegmentCenterAngle = winningIndex * degreesPerSegment + (degreesPerSegment / 2);
 
-    // Calculate rotation to bring the winning segment's center to the visual pointer (top).
-    const pointerAngle = 90; // The pointer is fixed at the top (visually 90 degrees in SVG space)
-    const requiredAngleToTarget = (pointerAngle - targetSegmentCenterAngle);
+    // Calculate the rotation needed to bring the center of the target segment (e.g., segment 0 center is at 25.7 degrees) 
+    // to the top (0 degrees). We subtract the target angle.
+    // We add a full 360 degrees to ensure the number is positive for the modulo operation.
+    const angleToAlignWinner = (360 - targetSegmentCenterAngle) % 360;
 
-    // Add random full revolutions (4 to 6 full spins)
+    // 3. Add random full revolutions (4 to 6 full spins for visual effect)
     const randomRevolutions = (Math.floor(Math.random() * 3) + 4) * 360; 
 
-    // Final Target Rotation
-    const finalTargetRotation = currentRotation + randomRevolutions + requiredAngleToTarget;
+    // 4. Final Target Rotation
+    // The final rotation is the current rotation, plus full spins, plus the precise alignment angle.
+    const finalTargetRotation = currentRotation + randomRevolutions + angleToAlignWinner;
 
-    // Apply the rotation (to the wheel-container div)
+    // 5. Apply the rotation (to the wheel-container div)
     wheelContainer.style.transform = `rotate(${finalTargetRotation}deg)`;
 
     // Update the total rotation for the next spin
     currentRotation = finalTargetRotation;
 
-    // Display Result After Animation
+    // 6. Display Result After Animation
+    // The transition duration is 4s, so we delay the result display by 4s.
     setTimeout(() => {
         spinButton.disabled = false;
         resultDisplay.textContent = `Winner: ${winningPerson.name}!`;
     }, 4000);
 }
+
+// ... (Rest of the file remains the same)
 
 // --- Initialization ---
 document.addEventListener('DOMContentLoaded', () => {
